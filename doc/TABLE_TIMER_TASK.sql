@@ -14,6 +14,7 @@ create table timer_task
    SCF_NAMESPACE        varchar(64) comment '云函数命名空间',
    SCF_NAME             varchar(64) comment '云函数名称',
    TRIGGER_NAME         varchar(36) comment '触发器id',
+   IS_ASYNC             char(1) comment '是否异步 0否 1是',
    CREATE_TIME          datetime comment '创建时间',
    OPERATOR             varchar(36) comment '操作人',
    OPERATION_TIME       datetime comment '操作时间',
