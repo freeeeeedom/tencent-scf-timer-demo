@@ -1,0 +1,16 @@
+#端口号配置
+server:
+  port: 9091
+  #servlet-path: /freeeeeeedom
+#  servlet:
+#    context-path: /
+
+# 数据库
+spring:
+  application:
+    name: priv
+  aop:
+    proxy-target-class: false
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
