@@ -43,6 +43,16 @@
             <artifactId>tencentcloud-sdk-java</artifactId>
             <version>3.0.67</version>
         </dependency>
+        <!--spring boot 默认数据源 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        <!--mysql 连接器-->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
         <!--引入第三方durid 数据源-->
         <dependency>
             <groupId>com.alibaba</groupId>

@@ -12,6 +12,7 @@ import priv.freeeeeedom.timer.dao.ScfTimerTaskDao;
 import priv.freeeeeedom.timer.data.InfResultVO;
 import priv.freeeeeedom.timer.data.ScfTimerDTO;
 import priv.freeeeeedom.timer.data.TimerTaskType;
+import priv.freeeeeedom.utils.BeanSetTest;
 import priv.freeeeeedom.utils.BeanTool;
 import priv.freeeeeedom.utils.ResultUtils;
 
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 
 /**
  * 定时任务执行Controller
+ *
  * @author: Nevernow
  * @Date: 17:18 2019/5/21
  */
@@ -41,6 +43,7 @@ public class ScfTimer {
 
     /**
      * 远程定时器调用该方法发起任务
+     *
      * @param: [dto]
      * @return: priv.freeeeeedom.timer.data.InfResultVO
      * @author: Nevernow
@@ -84,4 +87,19 @@ public class ScfTimer {
         }
         return resultVO;
     }
+
+    @RequestMapping("/setBeanTest.mob")
+    @ResponseBody
+    public Object setBeanTest() {
+        BeanSetTest test = new BeanSetTest();
+        try {
+            BeanTool.setBean(test);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        ((BeanSetTest) BeanTool.getBean("beanSetTest")).sayYes();
+        return test.getClass().getName();
+    }
 }
+
+
