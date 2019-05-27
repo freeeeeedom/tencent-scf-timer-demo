@@ -1,6 +1,8 @@
 #端口号配置
 server:
   port: 9091
+  tomcat:
+    max-threads: 20
   #servlet-path: /freeeeeeedom
 #  servlet:
 #    context-path: /
