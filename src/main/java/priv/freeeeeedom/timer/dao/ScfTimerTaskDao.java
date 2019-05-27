@@ -29,7 +29,7 @@ public class ScfTimerTaskDao extends JdbcDaoSupport {
         List<Map<String, Object>> result = null;
         log.info(sql);
         try {
-            result = this.getJdbcTemplate().queryForList(sql, new Object[]{dto.getScfNamespace(), dto.getScfName(), dto.getTriggerName()});
+            result = this.getJdbcTemplate().queryForList(sql, dto.getScfNamespace(), dto.getScfName(), dto.getTriggerName());
         } catch (EmptyResultDataAccessException e) {
             log.info("查询结果为空!");
         }

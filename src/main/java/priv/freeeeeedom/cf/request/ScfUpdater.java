@@ -18,42 +18,36 @@ import priv.freeeeeedom.cf.request.data.base.ScfRequestBase;
  * @Date: 10:57 2019/5/21
  */
 public class ScfUpdater {
-    //todo:输入接入点信息
+    public static final String SECRET_ID = "******";
+    public static final String SECRET_KEY = "******";
     public static final String ENDPOINT = "scf.tencentcloudapi.com";
     public static final String REGION = "ap-guangzhou";
-    public static final String SERCET_ID = "*******";
-    public static final String SERCET_KEY = "*******";
     /**
      * log对象
      */
     private static Logger log = LoggerFactory.getLogger(ScfUpdater.class);
     private static ScfClient client = null;
 
-    private String Namespace = null;
-    private String FunctionName = null;
+    private String nameSpace;
+    private String functionName;
     private static VariablePrototype variablePrototype = new VariablePrototype();
 
-    public ScfUpdater(String Namespace) {
-        this(Namespace, null);
+    public ScfUpdater(String nameSpace) {
+        this(nameSpace, null);
     }
 
-    public ScfUpdater(String Namespace, String FunctionName) {
-        this(Namespace, FunctionName, SERCET_ID, SERCET_KEY,
-                ENDPOINT, REGION);
-    }
-
-    public ScfUpdater(String Namespace, String FunctionName, String sercetId, String secretKey, String Endpoint, String region) {
-        Credential cred = new Credential(sercetId, secretKey);
+    private ScfUpdater(String namseSpace, String functionName) {
+        Credential cred = new Credential(SECRET_ID, SECRET_KEY);
 
         HttpProfile httpProfile = new HttpProfile();
-        httpProfile.setEndpoint(Endpoint);
+        httpProfile.setEndpoint(ENDPOINT);
 
         ClientProfile clientProfile = new ClientProfile();
         clientProfile.setHttpProfile(httpProfile);
-        client = new ScfClient(cred, region, clientProfile);
+        client = new ScfClient(cred, REGION, clientProfile);
 
-        this.Namespace = Namespace;
-        this.FunctionName = FunctionName;
+        this.nameSpace = namseSpace;
+        this.functionName = functionName;
     }
 
     /**
@@ -65,7 +59,7 @@ public class ScfUpdater {
      * @Date: 2019/5/21 10:43
      */
     public void updateTrigger(CreateTriggerRequestPlus req) throws TencentCloudSDKException {
-        delTrigger(new DeleteTriggerRequestPlus(Namespace, req.getFunctionName(), req.getTriggerName()));
+        delTrigger(new DeleteTriggerRequestPlus(nameSpace, req.getFunctionName(), req.getTriggerName()));
         createTrigger(req);
     }
 
@@ -92,7 +86,7 @@ public class ScfUpdater {
      * @author: Nevernow
      * @Date: 2019/5/21 10:43
      */
-    public void delTrigger(DeleteTriggerRequestPlus req) throws TencentCloudSDKException {
+    private void delTrigger(DeleteTriggerRequestPlus req) throws TencentCloudSDKException {
         initBaseParam(req);
         DeleteTriggerResponse resp = client.DeleteTrigger(req);
         log.info(DeleteTriggerRequest.toJsonString(resp));
@@ -107,9 +101,8 @@ public class ScfUpdater {
      * @Date: 2019/5/21 10:44
      */
     public ListFunctionsResponse getFunctionList(ListFunctionsRequestPlus req) throws TencentCloudSDKException {
-        req.setNamespace(Namespace);
-        ListFunctionsResponse resp = client.ListFunctions(req);
-        return resp;
+        req.setNamespace(nameSpace);
+        return client.ListFunctions(req);
     }
 
     /**
@@ -122,8 +115,7 @@ public class ScfUpdater {
      */
     public GetFunctionResponse getFunctionDetail(GetFunctionRequestPlus req) throws TencentCloudSDKException {
         initBaseParam(req);
-        GetFunctionResponse resp = client.GetFunction(req);
-        return resp;
+        return client.GetFunction(req);
     }
 
     /**
@@ -142,9 +134,9 @@ public class ScfUpdater {
     }
 
     private void initBaseParam(ScfRequestBase req) {
-        req.setNs(Namespace);
-        if (FunctionName != null) {
-            req.setFn(FunctionName);
+        req.setNs(nameSpace);
+        if (functionName != null) {
+            req.setFn(functionName);
         }
     }
 

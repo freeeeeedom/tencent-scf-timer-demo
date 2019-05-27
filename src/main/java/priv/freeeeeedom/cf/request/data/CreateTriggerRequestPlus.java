@@ -12,17 +12,21 @@ public class CreateTriggerRequestPlus extends CreateTriggerRequest implements Sc
     @Expose
     private String Namespace;
 
-    public CreateTriggerRequestPlus(String FunctionName, String TriggerName, String TriggerDesc, String Type, String Enable) {
+    public CreateTriggerRequestPlus(String FunctionName, String TriggerName, String TriggerDesc, String Type, String enable) {
         this.setTriggerName(TriggerName);
         this.setTriggerDesc(TriggerDesc);
         this.setType(Type);
         this.setNamespace(Namespace);
         this.setFunctionName(FunctionName);
-        this.setEnable(Enable);
+        this.setEnable(enable);
     }
 
     public CreateTriggerRequestPlus(String FunctionName, String TriggerName, String TriggerDesc) {
-        this(FunctionName, TriggerName, TriggerDesc, "timer", "OPEN");
+        this(FunctionName, TriggerName, TriggerDesc, "OPEN");
+    }
+
+    public CreateTriggerRequestPlus(String FunctionName, String TriggerName, String TriggerDesc, String enable) {
+        this(FunctionName, TriggerName, TriggerDesc, "timer", enable);
     }
 
     public String getNamespace() {

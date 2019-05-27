@@ -29,6 +29,8 @@ public class BeanTool {
         TencentScfTimerDemoApplication.context.getAutowireCapableBeanFactory().applyBeanPostProcessorsAfterInitialization(object, object.getClass().getName());
         //将obj以单例的形式入驻到容器中，此时通过obj.getClass().getName()或obj.getClass()都可以拿到放入Spring容器的Bean
         beanFactory.registerSingleton(beanName, object);
+        beanFactory.registerResolvableDependency(object.getClass(), object);
+        beanFactory.registerBeanDefinition(beanName, beanDefinition);
         return object.getClass().getName();
     }
 }

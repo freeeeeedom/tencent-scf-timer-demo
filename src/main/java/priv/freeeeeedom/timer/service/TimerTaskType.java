@@ -1,4 +1,4 @@
-package priv.freeeeeedom.timer.data;
+package priv.freeeeeedom.timer.service;
 
 public enum TimerTaskType {
     /**
