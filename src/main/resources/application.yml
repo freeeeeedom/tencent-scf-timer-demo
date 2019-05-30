@@ -4,8 +4,8 @@ server:
   tomcat:
     max-threads: 20
   #servlet-path: /freeeeeeedom
-#  servlet:
-#    context-path: /
+  servlet:
+    context-path: /scf
 
 # 数据库
 spring:
