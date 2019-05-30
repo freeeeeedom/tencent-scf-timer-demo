@@ -1,4 +1,5 @@
-package priv.freeeeeedom.timer.data;
+package priv.freeeeeedom.utils.data;
+
 
 /**
  * @author Nevernow

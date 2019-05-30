@@ -6,6 +6,7 @@ import priv.freeeeeedom.timer.base.BaseTimerTask;
 
 /**
  * 根据class加载的方式执行任务
+ *
  * @author: Nevernow
  * @Date: 16:40 2019/5/21
  */
@@ -16,7 +17,7 @@ public class ClassDemoTask extends BaseTimerTask {
     private static Logger log = LoggerFactory.getLogger(ClassDemoTask.class);
 
     @Override
-    public Object runTask() throws Exception {
+    public Object runTask(Object... param) throws Exception {
         log.info("执行逻辑class...");
         return "success";
     }

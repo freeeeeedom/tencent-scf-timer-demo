@@ -18,8 +18,8 @@ public class BeanDemoTask extends BaseTimerTask {
     private static Logger log = LoggerFactory.getLogger(BeanDemoTask.class);
 
     @Override
-    public Object runTask() throws Exception {
+    public Object runTask(Object... param) throws Exception {
         log.info("执行逻辑Bean...");
-        return "success";
+        return "success"+Thread.currentThread().getName();
     }
 }

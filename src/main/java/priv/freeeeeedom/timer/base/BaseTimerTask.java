@@ -24,21 +24,16 @@ public abstract class BaseTimerTask<T> implements BaseTimer {
      * @author: Nevernow
      * @Date: 2019/5/21 17:11
      */
-    protected abstract T runTask() throws Exception;
+    protected abstract T runTask(Object... param) throws Exception;
 
     @Override
-    public Object startTimer() {
+    public Object startTimer(Object... param) {
         try {
-            return this.runTask();
+            return this.runTask(param);
         } catch (Exception e) {
             log.error("定时任务执行异常!", e);
             return ResultUtils.getExceptionLineSize(e, 7);
         }
-    }
-
-    @Override
-    public Object startTimer(Object... param) {
-        return null;
     }
 
 }

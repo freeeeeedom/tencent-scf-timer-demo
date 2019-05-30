@@ -9,24 +9,24 @@ import com.google.gson.Gson;
  * @Date: 15:11 2019/5/21
  */
 public class ScfTimerDTO {
-    private String scfNamespace;
-    private String scfName;
+    private String nameSpace;
+    private String functionName;
     private String triggerName;
 
-    public String getScfNamespace() {
-        return scfNamespace;
+    public String getNameSpace() {
+        return nameSpace;
     }
 
-    public void setScfNamespace(String scfNamespace) {
-        this.scfNamespace = scfNamespace;
+    public void setNameSpace(String nameSpace) {
+        this.nameSpace = nameSpace;
     }
 
-    public String getScfName() {
-        return scfName;
+    public String getFunctionName() {
+        return functionName;
     }
 
-    public void setScfName(String scfName) {
-        this.scfName = scfName;
+    public void setFunctionName(String functionName) {
+        this.functionName = functionName;
     }
 
     public String getTriggerName() {

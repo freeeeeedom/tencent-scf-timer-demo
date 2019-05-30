@@ -1,4 +1,4 @@
-package priv.freeeeeedom.timer.data;
+package priv.freeeeeedom.utils.data;
 
 
 import com.google.gson.Gson;

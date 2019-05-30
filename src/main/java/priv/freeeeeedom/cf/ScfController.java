@@ -15,8 +15,8 @@ import priv.freeeeeedom.cf.request.data.DeleteTriggerRequestPlus;
 import priv.freeeeeedom.cf.request.data.GetFunctionRequestPlus;
 import priv.freeeeeedom.cf.request.data.ListFunctionsRequestPlus;
 import priv.freeeeeedom.cf.service.ScfServiceImpl;
-import priv.freeeeeedom.timer.data.InfResultVO;
 import priv.freeeeeedom.utils.ResultUtils;
+import priv.freeeeeedom.utils.data.InfResultVO;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;

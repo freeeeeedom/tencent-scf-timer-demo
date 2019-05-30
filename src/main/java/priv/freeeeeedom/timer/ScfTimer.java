@@ -4,25 +4,25 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import priv.freeeeeedom.timer.data.InfResultVO;
 import priv.freeeeeedom.timer.data.ScfTimerDTO;
-import priv.freeeeeedom.timer.data.TimerTaskType;
 import priv.freeeeeedom.timer.service.ScfTimerService;
-import priv.freeeeeedom.utils.BeanSetTest;
-import priv.freeeeeedom.utils.BeanTool;
+import priv.freeeeeedom.timer.task.ScfTimerStrategy;
+import priv.freeeeeedom.timer.task.TimerTaskFactory;
 import priv.freeeeeedom.utils.ResultUtils;
+import priv.freeeeeedom.utils.data.InfResultVO;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.ValidationException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
-import static priv.freeeeeedom.timer.service.ScfTimerService.TASK_NAME;
-import static priv.freeeeeedom.timer.service.ScfTimerService.TASK_TYPE;
+import static priv.freeeeeedom.timer.task.ScfTimerStrategy.*;
 
 /**
  * 定时任务执行Controller
@@ -33,52 +33,52 @@ import static priv.freeeeeedom.timer.service.ScfTimerService.TASK_TYPE;
 @Controller
 @RequestMapping("/scfTimer")
 public class ScfTimer {
+
     /**
      * log对象
      */
     private static Logger log = LoggerFactory.getLogger(ScfTimer.class);
 
+
     @Autowired
     ScfTimerService scfTimerService;
 
     /**
-     * 远程定时器调用该方法发起任务
+     * 定时任务调用方法
      *
-     * @param: [dto]
-     * @return: priv.freeeeeedom.timer.data.InfResultVO
+     * @param: [dto, request, response]
+     * @return: red.sea.outwork.mobileinterface.view.InfResultVO
      * @author: Nevernow
-     * @Date: 2019/5/22 10:31
+     * @Date: 2019/5/22 16:26
      */
-    @CrossOrigin
     @RequestMapping("/runTimer.mob")
     @ResponseBody
-    public InfResultVO runTimer(@RequestBody ScfTimerDTO dto) {
+    public InfResultVO runTimer(@RequestBody ScfTimerDTO dto, HttpServletRequest request, HttpServletResponse response) {
         InfResultVO resultVO = new InfResultVO();
         try {
             log.info("-----------------------定时器执行开始-----------------------");
             log.info(dto.toString());
-            List<Map<String, Object>> tasks = scfTimerService.getTimerTask(dto);
+            List<Map<String, Object>> tasks = scfTimerService.getTimerTask(dto)
+                    .parallelStream()
+                    .filter(item -> YES.equals(item.get(IN_USE))).collect(Collectors.toList());
 
             Map result = new ConcurrentHashMap((int) ((tasks.size() * 1.25) + 1));
             //并行流执行
             tasks.parallelStream().forEach(task -> {
                 Object taskType = task.get(TASK_TYPE);
                 Object taskName = task.get(TASK_NAME);
-                //Class类型任务
-                if (TimerTaskType.CLASS.name().equals(taskType)) {
-                    result.put(taskName, scfTimerService.classTypeTask(task));
-                }
-                //Bean类型任务
-                if (TimerTaskType.BEAN.name().equals(taskType)) {
-                    result.put(taskName, scfTimerService.beanTypeTask(task));
-                }
-                //Http类型任务
-                if (TimerTaskType.HTTP.name().equals(taskType)) {
-                    result.put(taskName, scfTimerService.httpTypeTask(task));
-                }
-                //Function类型任务
-                if (TimerTaskType.FUNCTION.name().equals(taskType)) {
-                    result.put(taskName, scfTimerService.functionTypeTask(task));
+                try {
+                    ScfTimerStrategy strategy = TimerTaskFactory.getStrategy(taskType);
+                    assert strategy != null;
+                    Object res= strategy.execute(task);
+                    if (res == null) {
+                        result.put(taskName, "返回结果为空");
+                    } else {
+                        result.put(taskName, res);
+                    }
+                } catch (Exception e) {
+                    log.error(taskName + "任务执行异常", e);
+                    result.put(taskName, ResultUtils.getExceptionLineSize(e, 7));
                 }
             });
             resultVO.setResult(result);
@@ -92,19 +92,4 @@ public class ScfTimer {
         }
         return resultVO;
     }
-
-    @RequestMapping("/setBeanTest.mob")
-    @ResponseBody
-    public Object setBeanTest() {
-        BeanSetTest test = new BeanSetTest();
-        try {
-            BeanTool.setBean(test);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        ((BeanSetTest) BeanTool.getBean("beanSetTest")).sayYes();
-        return test.getClass().getName();
-    }
 }
-
-
