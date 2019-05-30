@@ -6,10 +6,19 @@ import com.tencentcloudapi.common.profile.ClientProfile;
 import com.tencentcloudapi.common.profile.HttpProfile;
 import com.tencentcloudapi.scf.v20180416.ScfClient;
 import com.tencentcloudapi.scf.v20180416.models.*;
+import javafx.application.Application;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.stereotype.Component;
+import priv.freeeeeedom.ApplicationParam;
 import priv.freeeeeedom.cf.request.data.*;
 import priv.freeeeeedom.cf.request.data.base.ScfRequestBase;
+import priv.freeeeeedom.utils.BeanTool;
+
+import java.util.Map;
 
 /**
  * scf更新sdk调用方法
@@ -17,16 +26,14 @@ import priv.freeeeeedom.cf.request.data.base.ScfRequestBase;
  * @author: Nevernow
  * @Date: 10:57 2019/5/21
  */
+
 public class ScfUpdater {
-    public static final String SECRET_ID = "******";
-    public static final String SECRET_KEY = "******";
-    public static final String ENDPOINT = "scf.tencentcloudapi.com";
-    public static final String REGION = "ap-guangzhou";
     /**
      * log对象
      */
     private static Logger log = LoggerFactory.getLogger(ScfUpdater.class);
     private static ScfClient client = null;
+
 
     private String nameSpace;
     private String functionName;
@@ -36,15 +43,21 @@ public class ScfUpdater {
         this(nameSpace, null);
     }
 
-    private ScfUpdater(String namseSpace, String functionName) {
-        Credential cred = new Credential(SECRET_ID, SECRET_KEY);
+    private ScfUpdater(String nameSpace, String functionName) {
+        this(nameSpace, functionName, "scf.tencentcloudapi.com", "ap-guangzhou");
+    }
+
+    private ScfUpdater(String namseSpace, String functionName, String enpoint, String region) {
+        ApplicationParam param = (ApplicationParam) BeanTool.getBean(ApplicationParam.class);
+        Map<String, String> applicationArguments = param.getApplicationArguments();
+        Credential cred = new Credential(applicationArguments.get("secretId"), applicationArguments.get("secretKey"));
 
         HttpProfile httpProfile = new HttpProfile();
-        httpProfile.setEndpoint(ENDPOINT);
+        httpProfile.setEndpoint(enpoint);
 
         ClientProfile clientProfile = new ClientProfile();
         clientProfile.setHttpProfile(httpProfile);
-        client = new ScfClient(cred, REGION, clientProfile);
+        client = new ScfClient(cred, region, clientProfile);
 
         this.nameSpace = namseSpace;
         this.functionName = functionName;
@@ -86,7 +99,7 @@ public class ScfUpdater {
      * @author: Nevernow
      * @Date: 2019/5/21 10:43
      */
-    private void delTrigger(DeleteTriggerRequestPlus req) throws TencentCloudSDKException {
+    public void delTrigger(DeleteTriggerRequestPlus req) throws TencentCloudSDKException {
         initBaseParam(req);
         DeleteTriggerResponse resp = client.DeleteTrigger(req);
         log.info(DeleteTriggerRequest.toJsonString(resp));

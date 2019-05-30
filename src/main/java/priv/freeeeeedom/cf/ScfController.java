@@ -1,27 +1,29 @@
 package priv.freeeeeedom.cf;
 
-import com.google.gson.Gson;
 import com.tencentcloudapi.common.exception.TencentCloudSDKException;
 import com.tencentcloudapi.scf.v20180416.models.GetFunctionResponse;
 import com.tencentcloudapi.scf.v20180416.models.Trigger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import priv.freeeeeedom.cf.request.ScfUpdater;
 import priv.freeeeeedom.cf.request.data.CreateTriggerRequestPlus;
+import priv.freeeeeedom.cf.request.data.DeleteTriggerRequestPlus;
 import priv.freeeeeedom.cf.request.data.GetFunctionRequestPlus;
 import priv.freeeeeedom.cf.request.data.ListFunctionsRequestPlus;
+import priv.freeeeeedom.cf.service.ScfServiceImpl;
 import priv.freeeeeedom.timer.data.InfResultVO;
 import priv.freeeeeedom.utils.ResultUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.ValidationException;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -30,6 +32,7 @@ import java.util.stream.Collectors;
  * @author: Nevernow
  * @Date: 17:49 2019/5/23
  */
+@CrossOrigin
 @Controller
 @RequestMapping("/scf")
 public class ScfController {
@@ -40,15 +43,17 @@ public class ScfController {
      */
     private static Logger log = LoggerFactory.getLogger(ScfController.class);
 
+    @Autowired
+    ScfServiceImpl service;
+
     /**
      * 查询函数列表
      *
      * @param: [nameSpace, request, response]
-     * @return: InfResultVO
+     * @return: red.sea.outwork.mobileinterface.view.InfResultVO
      * @author: Nevernow
      * @Date: 2019/5/23 17:50
      */
-    @CrossOrigin
     @RequestMapping(value = "/functionList.mob", method = RequestMethod.GET)
     @ResponseBody
     public InfResultVO functionList(String nameSpace, HttpServletRequest request, HttpServletResponse response) {
@@ -67,11 +72,10 @@ public class ScfController {
      * 查询函数详情
      *
      * @param: [nameSpace, functionName, request, response]
-     * @return: InfResultVO
+     * @return: red.sea.outwork.mobileinterface.view.InfResultVO
      * @author: Nevernow
      * @Date: 2019/5/23 17:51
      */
-    @CrossOrigin
     @RequestMapping(value = "/functionDetail.mob", method = RequestMethod.GET)
     @ResponseBody
     public InfResultVO functionDetail(String nameSpace, String functionName,
@@ -91,36 +95,20 @@ public class ScfController {
      * 查询函数触发器详情
      *
      * @param: [nameSpace, functionName, request, response]
-     * @return: InfResultVO
+     * @return: red.sea.outwork.mobileinterface.view.InfResultVO
      * @author: Nevernow
      * @Date: 2019/5/23 17:51
      */
-    @CrossOrigin
     @RequestMapping(value = "/functionTriggers.mob", method = RequestMethod.GET)
     @ResponseBody
     public InfResultVO functionTriggers(String nameSpace, String functionName,
                                         HttpServletRequest request, HttpServletResponse response) {
         InfResultVO resultVO = new InfResultVO();
         try {
-            Gson gson = new Gson();
-            ScfUpdater update = ScfUpdaterFactory.getUpdater(nameSpace);
-            //查询scf详情
-            GetFunctionResponse res = update.getFunctionDetail(new GetFunctionRequestPlus(functionName));
-            //获取触发器
-            List<Trigger> triggers = Arrays.asList(res.getTriggers());
-            List<Map<String, String>> result = Collections.synchronizedList(new ArrayList<>());
-            triggers.parallelStream().forEach(item -> {
-                Map map = new HashMap(9);
-                map.put("nameSpace", nameSpace);
-                map.put("functionName", functionName);
-                map.put("type", item.getType());
-                map.put("triggerName", item.getTriggerName());
-                map.put("enable", item.getEnable());
-                map.put("triggerDesc", gson.fromJson(item.getTriggerDesc(), Map.class).get("cron"));
-                result.add(map);
-            });
+            List<Map<String, String>> result = service.getFunctionTriggers(nameSpace, functionName);
             resultVO.setResult(result);
         } catch (Exception e) {// 同步事件接口调用错误
+            log.error("异常", e);
             resultVO.setDes(ResultUtils.getExceptionLineSize(e, 7));
             resultVO.setError("10000");
         }
@@ -131,11 +119,10 @@ public class ScfController {
      * 更新触发器
      *
      * @param: [param, request, response]
-     * @return: InfResultVO
+     * @return: red.sea.outwork.mobileinterface.view.InfResultVO
      * @author: Nevernow
      * @Date: 2019/5/23 17:51
      */
-    @CrossOrigin
     @RequestMapping(value = "/updateTrigger.mob", method = RequestMethod.POST)
     @ResponseBody
     public InfResultVO updateTrigger(@RequestBody Map<String, Object> param, HttpServletRequest request, HttpServletResponse response) {
@@ -158,14 +145,41 @@ public class ScfController {
     }
 
     /**
-     * 创建触发器
+     * 刪除触发器
      *
      * @param: [param, request, response]
-     * @return: InfResultVO
+     * @return: red.sea.outwork.mobileinterface.view.InfResultVO
      * @author: Nevernow
      * @Date: 2019/5/23 17:51
      */
-    @CrossOrigin
+    @RequestMapping(value = "/deleteTrigger.mob", method = RequestMethod.DELETE)
+    @ResponseBody
+    public InfResultVO deleteTrigger(@RequestBody Map<String, Object> param, HttpServletRequest request, HttpServletResponse response) {
+        InfResultVO resultVO = new InfResultVO();
+        try {
+            String nameSpace = (String) param.get("nameSpace");
+            String functionName = (String) param.get("functionName");
+            String triggerName = (String) param.get("triggerName");
+
+            validateBaseArgument(nameSpace, functionName, triggerName);
+            ScfUpdater update = ScfUpdaterFactory.getUpdater(nameSpace);
+            update.delTrigger(new DeleteTriggerRequestPlus(nameSpace, functionName, triggerName));
+            queryScfBuildResult(resultVO, functionName, triggerName, update);
+        } catch (Exception e) {// 同步事件接口调用错误
+            resultVO.setDes(ResultUtils.getExceptionLineSize(e, 7));
+            resultVO.setError("10000");
+        }
+        return resultVO;
+    }
+
+    /**
+     * 创建触发器
+     *
+     * @param: [param, request, response]
+     * @return: red.sea.outwork.mobileinterface.view.InfResultVO
+     * @author: Nevernow
+     * @Date: 2019/5/23 17:51
+     */
     @RequestMapping(value = "/createTrigger.mob", method = RequestMethod.POST)
     @ResponseBody
     public InfResultVO createTrigger(@RequestBody Map<String, Object> param, HttpServletRequest request, HttpServletResponse response) {
@@ -197,9 +211,7 @@ public class ScfController {
     }
 
     private void validateArgumentNull(String nameSpace, String functionName, String triggerName, String triggerDesc, String enable) {
-        Assert.notNull(nameSpace, "命名空间为空!");
-        Assert.notNull(functionName, "函数名为空!");
-        Assert.notNull(triggerName, "触发器名称为空!");
+        validateBaseArgument(nameSpace, functionName, triggerName);
         Assert.notNull(triggerDesc, "cron表达式为空!");
         Assert.notNull(enable, "是否开启为空!");
         if (!enable.equals(OPEN) && !enable.equals(CLOSE)) {
@@ -207,28 +219,9 @@ public class ScfController {
         }
     }
 
-    /**
-     * 享元工厂
-     *
-     * @author: Nevernow
-     * @Date: 16:23 2019/5/23
-     */
-    static class ScfUpdaterFactory {
-        private static final Map<String, ScfUpdater> UPDATERS = new ConcurrentHashMap(50);
-
-        static ScfUpdater getUpdater(String nameSpace) {
-            ScfUpdater updater;
-            if (StringUtils.isEmpty(nameSpace)) {
-                updater = getUpdater("crm");
-            } else {
-                updater = UPDATERS.get(nameSpace);
-            }
-            if (null == updater) {
-                updater = new ScfUpdater(nameSpace);
-                log.info("新建命名空间原型" + nameSpace);
-                UPDATERS.putIfAbsent(nameSpace, updater);
-            }
-            return updater;
-        }
+    private void validateBaseArgument(String nameSpace, String functionName, String triggerName) {
+        Assert.notNull(nameSpace, "命名空间为空!");
+        Assert.notNull(functionName, "函数名为空!");
+        Assert.notNull(triggerName, "触发器名称为空!");
     }
 }
