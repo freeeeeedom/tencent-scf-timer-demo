@@ -1,7 +1,7 @@
 HELP.md
 /target/
 !.mvn/wrapper/maven-wrapper.jar
-
+**/dataSource.xml:
 ### STS ###
 .apt_generated
 .classpath
