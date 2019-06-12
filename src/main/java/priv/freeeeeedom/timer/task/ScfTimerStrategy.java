@@ -38,7 +38,6 @@ public abstract class ScfTimerStrategy {
         if (isRunning()) {
             throw new ValidationException("任务正在执行中");
         }
-        System.out.println(isRun);
         try {
             isRun = true;
             return run(task);
